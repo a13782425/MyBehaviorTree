@@ -12,6 +12,8 @@ namespace Belong.BehaviorTree
         /// </summary>
         [BField(ShowName = "成功个数")]
         public int Num;
+        [BField]
+        private int Test;
 
         protected int m_runningIndex;
         /// <summary>
