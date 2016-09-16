@@ -1,8 +1,13 @@
-﻿using LitJson;
+﻿/*
+ * Belong
+ * 2016-09-15
+*/
+
+using LitJson;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Belong.BehaviorTree.Editor
+namespace Belong.BehaviorTree
 {
     /// <summary>
     /// 行为树管理器
@@ -11,16 +16,16 @@ namespace Belong.BehaviorTree.Editor
     {
         public Dictionary<string, BTree> m_mapTree = new Dictionary<string, BTree>();
 
-        private static BTreeMgr s_cInstance;
-        public static BTreeMgr sInstance
+        private static BTreeMgr _instance;
+        public static BTreeMgr Instance
         {
             get
             {
-                if (s_cInstance == null)
+                if (_instance == null)
                 {
-                    s_cInstance = new BTreeMgr();
+                    _instance = new BTreeMgr();
                 }
-                return s_cInstance;
+                return _instance;
             }
         }
 
@@ -29,47 +34,31 @@ namespace Belong.BehaviorTree.Editor
             //
         }
 
-        //load data
-        public void Load(string jsontxt)
+        /// <summary>
+        /// 加载树
+        /// </summary>
+        /// <param name="jsontxt"></param>
+        /// <returns>返回第一棵树的名字</returns>
+        public string Load(string jsontxt)
         {
+            string treeName = string.Empty;
             JsonData json = JsonMapper.ToObject(jsontxt);
             json = json["trees"];
             int count = json.Count;
             for (int i = 0; i < count; i++)
             {
+
                 BTree bt = new BTree();
                 JsonData data = json[i];
                 bt.ReadJson(data);
-                this.m_mapTree.Add(bt.m_strName, bt);
+                if (i == 0)
+                {
+                    treeName = bt.m_treeName;
+                }
+                this.m_mapTree.Add(bt.m_treeName, bt);
             }
+            return treeName;
         }
-
-#if UNITY_EDITOR
-        //editor save data
-        //public void EditorSave()
-        //{
-        //    string filepath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "json");
-        //    Debug.Log(filepath);
-        //    JsonData data = new JsonData();
-        //    data["trees"] = new JsonData();
-        //    data["trees"].SetJsonType(JsonType.Array);
-        //    foreach (KeyValuePair<string, BTree> item in this.m_mapTree)
-        //    {
-        //        item.Value.WriteJson(data["trees"]);
-        //    }
-        //    File.WriteAllText(filepath, data.ToJson());
-        //}
-
-        ////editor load data
-        //public void EditorLoad()
-        //{
-        //    string filepath = EditorUtility.OpenFilePanel("Bahvior Tree", Application.dataPath, "json");
-        //    if (filepath == "") return;
-        //    this.m_mapTree.Clear();
-        //    string txt = File.ReadAllText(filepath);
-        //    Load(txt);
-        //}
-#endif
 
         public BTree GetTree(string name)
         {
@@ -88,22 +77,21 @@ namespace Belong.BehaviorTree.Editor
 
         public void Add(BTree tree)
         {
-            if (this.m_mapTree.ContainsKey(tree.m_strName))
+            if (this.m_mapTree.ContainsKey(tree.m_treeName))
             {
-                //				Debug.LogError("The tree id is exist.");
 #if UNITY_EDITOR
-                UnityEditor.EditorUtility.DisplayDialog("Error", "The tree named " + tree.m_strName + " is already exist.", "ok");
+                UnityEditor.EditorUtility.DisplayDialog("Error", "The tree named " + tree.m_treeName + " is already exist.", "ok");
 #endif
                 return;
             }
-            this.m_mapTree.Add(tree.m_strName, tree);
+            this.m_mapTree.Add(tree.m_treeName, tree);
         }
 
         public void Remove(BTree tree)
         {
             if (tree == null) return;
-            if (this.m_mapTree.ContainsKey(tree.m_strName))
-                this.m_mapTree.Remove(tree.m_strName);
+            if (this.m_mapTree.ContainsKey(tree.m_treeName))
+                this.m_mapTree.Remove(tree.m_treeName);
             else
                 Debug.LogError("The tree id is not exist.");
             return;

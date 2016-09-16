@@ -1,4 +1,8 @@
-﻿#if UNITY_EDITOR
+﻿/*
+ * Belong
+ * 2016-09-15
+*/
+
 using LitJson;
 using System;
 using System.Collections.Generic;
@@ -56,7 +60,7 @@ namespace Belong.BehaviorTree.Editor
         //    }
         //}// = new List<NodeEditor>();
 
-        [@MenuItem("BTree/Editor")]
+        [MenuItem("BTree/Editor")]
         static void initwin()
         {
             BTreeWin win = (BTreeWin)BTreeWin.GetWindow(typeof(BTreeWin));
@@ -94,12 +98,12 @@ namespace Belong.BehaviorTree.Editor
                     GUI.DrawTexture(new Rect(0, i * NODE_HEIGHT, this.position.width - GUI_WIDTH - 15, NODE_HEIGHT), tex2);
             }
 
-            if (cur_tree != null && cur_tree.m_cRoot != null && !string.IsNullOrEmpty(filePath))
+            if (cur_tree != null && cur_tree.m_root != null && !string.IsNullOrEmpty(filePath))
             {
                 m_lstNodeEditor.Clear();
                 int xx = 0;
                 int yy = 0;
-                RenderNode(cur_tree.m_cRoot, xx, ref yy);
+                RenderNode(cur_tree.m_root, xx, ref yy);
                 //cur_tree.m_cRoot.Render(xx, ref yy);
             }
             RenderNodeContext();
@@ -119,7 +123,7 @@ namespace Belong.BehaviorTree.Editor
             List<BTree> lst = new List<BTree>();
             if (!string.IsNullOrEmpty(filePath))
             {
-                lst = BTreeMgr.sInstance.GetTrees();
+                lst = BTreeMgr.Instance.GetTrees();
 
             }
             else
@@ -168,13 +172,13 @@ namespace Belong.BehaviorTree.Editor
                 {
                     cur_node = null;
                     BTree tree = new BTree();
-                    tree.m_strName = this.m_strInputName;
-                    BTreeMgr.sInstance.Add(tree);
-                    lst = BTreeMgr.sInstance.GetTrees();
+                    tree.m_treeName = this.m_strInputName;
+                    BTreeMgr.Instance.Add(tree);
+                    lst = BTreeMgr.Instance.GetTrees();
                     cur_tree = tree;
                     for (int i = 0; i < lst.Count; i++)
                     {
-                        if (lst[i].m_strName == tree.m_strName)
+                        if (lst[i].m_treeName == tree.m_treeName)
                         {
                             cur_tree_index = i;
                             break;
@@ -192,7 +196,7 @@ namespace Belong.BehaviorTree.Editor
             string[] treeNames = new string[lst.Count];
             for (int i = 0; i < lst.Count; i++)
             {
-                treeNames[i] = lst[i].m_strName;
+                treeNames[i] = lst[i].m_treeName;
             }
             cur_tree_index = EditorGUI.Popup(new Rect(x, y + 10, 100, 15), cur_tree_index, treeNames);
             if (cur_tree_index != last_tree_index)
@@ -205,8 +209,8 @@ namespace Belong.BehaviorTree.Editor
             if (GUI.Button(new Rect(x + 100, y, 100, 40), "移除树"))
             {
                 cur_node = null;
-                BTreeMgr.sInstance.Remove(cur_tree);
-                lst = BTreeMgr.sInstance.GetTrees();
+                BTreeMgr.Instance.Remove(cur_tree);
+                lst = BTreeMgr.Instance.GetTrees();
                 cur_tree = null;
                 cur_tree_index = -1;
                 last_tree_index = -1;
@@ -218,9 +222,9 @@ namespace Belong.BehaviorTree.Editor
 
             if (cur_tree != null)
             {
-                GUI.Label(new Rect(x, y, 200, 20), "TreeName: " + cur_tree.m_strName);
+                GUI.Label(new Rect(x, y, 200, 20), "TreeName: " + cur_tree.m_treeName);
                 y += 20;
-                cur_tree.m_strName = GUI.TextField(new Rect(x, y, 100, 20), cur_tree.m_strName);
+                cur_tree.m_treeName = GUI.TextField(new Rect(x, y, 100, 20), cur_tree.m_treeName);
                 y += 20;
             }
             select_create_node_id = EditorGUI.Popup(new Rect(x, y + 10, 100, 15), select_create_node_id, GetNodeLst());
@@ -231,7 +235,7 @@ namespace Belong.BehaviorTree.Editor
                     //BNode node = BNodeFactory.sInstance.Create(select_create_node_id);
                     BNode node = Create(select_create_node_id);
                     if (cur_tree != null)
-                        cur_tree.m_cRoot = node;
+                        cur_tree.m_root = node;
                 }
             }
             y += 45;
@@ -268,9 +272,8 @@ namespace Belong.BehaviorTree.Editor
 
         }
 
-
-
         #region 自定义方法
+
         /// <summary>
         /// 保存编辑器文件
         /// </summary>
@@ -280,7 +283,7 @@ namespace Belong.BehaviorTree.Editor
             JsonData data = new JsonData();
             data["trees"] = new JsonData();
             data["trees"].SetJsonType(JsonType.Array);
-            foreach (KeyValuePair<string, BTree> item in BTreeMgr.sInstance.m_mapTree)
+            foreach (KeyValuePair<string, BTree> item in BTreeMgr.Instance.m_mapTree)
             {
                 item.Value.WriteJson(data["trees"]);
             }
@@ -309,10 +312,10 @@ namespace Belong.BehaviorTree.Editor
         {
             filePath = EditorUtility.OpenFilePanel("Bahvior Tree", Application.dataPath, "json");
             if (string.IsNullOrEmpty(filePath)) return;
-            BTreeMgr.sInstance.m_mapTree.Clear();
+            BTreeMgr.Instance.m_mapTree.Clear();
             string txt = File.ReadAllText(filePath);
             fileName = Path.GetFileName(filePath);
-            BTreeMgr.sInstance.Load(txt);
+            BTreeMgr.Instance.Load(txt);
         }
 
         public void RenderNode(BNode node, int x, ref int y)
@@ -360,6 +363,8 @@ namespace Belong.BehaviorTree.Editor
 
         public void RenderNodeContext()
         {
+            string showName = string.Empty;
+            object[] attrobjs = null;
             Event evt = Event.current;
             cur_node = null;
             int count = 0;
@@ -396,8 +401,6 @@ namespace Belong.BehaviorTree.Editor
                 if (ne != null)
                 {
                     GUI.DrawTexture(ne.CurRect, tex);
-                    string showName = string.Empty;
-                    object[] attrobjs = null;
                     showName = select.Name;
                     attrobjs = select.GetType().GetCustomAttributes(typeof(BClassAttribute), false);
                     for (int i = 0; i < attrobjs.Length; i++)
@@ -418,25 +421,75 @@ namespace Belong.BehaviorTree.Editor
                     GenericMenu menu = new GenericMenu();
                     foreach (Type item in m_lstComposite)
                     {
-                        menu.AddItem(new GUIContent("创建/Composite/" + item.Name), false, menu_add_callback, new object[] { select, item });
+                        showName = item.Name;
+                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                        for (int i = 0; i < attrobjs.Length; i++)
+                        {
+                            BClassAttribute b = attrobjs[i] as BClassAttribute;
+                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                            {
+                                showName = b.ShowName;
+                            }
+                        }
+                        menu.AddItem(new GUIContent("创建/Composite/" + showName), false, menu_add_callback, new object[] { select, item });
                     }
 
                     foreach (Type item in m_lstAction)
                     {
-                        menu.AddItem(new GUIContent("创建/行为/" + item.Name), false, menu_add_callback, new object[] { select, item });
+                        showName = item.Name;
+                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                        for (int i = 0; i < attrobjs.Length; i++)
+                        {
+                            BClassAttribute b = attrobjs[i] as BClassAttribute;
+                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                            {
+                                showName = b.ShowName;
+                            }
+                        }
+                        menu.AddItem(new GUIContent("创建/行为/" + showName), false, menu_add_callback, new object[] { select, item });
                     }
                     foreach (Type item in m_lstCondition)
                     {
-                        menu.AddItem(new GUIContent("创建/Condition/" + item.Name), false, menu_add_callback, new object[] { select, item });
+                        showName = item.Name;
+                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                        for (int i = 0; i < attrobjs.Length; i++)
+                        {
+                            BClassAttribute b = attrobjs[i] as BClassAttribute;
+                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                            {
+                                showName = b.ShowName;
+                            }
+                        }
+                        menu.AddItem(new GUIContent("创建/Condition/" + showName), false, menu_add_callback, new object[] { select, item });
                     }
                     foreach (Type item in m_lstDecorator)
                     {
-                        menu.AddItem(new GUIContent("Create/Decorator/" + item.Name), false, menu_add_callback, new object[] { select, item });
+                        showName = item.Name;
+                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                        for (int i = 0; i < attrobjs.Length; i++)
+                        {
+                            BClassAttribute b = attrobjs[i] as BClassAttribute;
+                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                            {
+                                showName = b.ShowName;
+                            }
+                        }
+                        menu.AddItem(new GUIContent("创建/Decorator/" + showName), false, menu_add_callback, new object[] { select, item });
                     }
 
                     foreach (Type item in m_lstComposite)
                     {
-                        menu.AddItem(new GUIContent("更改/Composite/" + item.Name), false, menu_switch_callback, new object[] { select, item });
+                        showName = item.Name;
+                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                        for (int i = 0; i < attrobjs.Length; i++)
+                        {
+                            BClassAttribute b = attrobjs[i] as BClassAttribute;
+                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                            {
+                                showName = b.ShowName;
+                            }
+                        }
+                        menu.AddItem(new GUIContent("更改/Composite/" + showName), false, menu_switch_callback, new object[] { select, item });
                     }
 
                     menu.AddItem(new GUIContent("删除"), false, menu_delete_node, select);
@@ -477,9 +530,9 @@ namespace Belong.BehaviorTree.Editor
             {
                 bnode.Parent.ReplaceChild(bnode, node);
             }
-            else if (cur_tree.m_cRoot == bnode)
+            else if (cur_tree.m_root == bnode)
             {
-                cur_tree.m_cRoot = node;
+                cur_tree.m_root = node;
             }
             cur_node = node;
             sInstance.Repaint();
@@ -623,28 +676,28 @@ namespace Belong.BehaviorTree.Editor
                     if (info.FieldType == typeof(int))
                     {
                         string fieldvalue = info.GetValue(select).ToString();
-                        GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
+                        GUI.Label(new Rect(x, y + i * 20, 100, 20), showName);
                         fieldvalue = GUI.TextField(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue);
                         vl = int.Parse(fieldvalue);
                     }
                     else if (info.FieldType == typeof(float))
                     {
                         string fieldvalue = info.GetValue(select).ToString();
-                        GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
+                        GUI.Label(new Rect(x, y + i * 20, 100, 20), showName);
                         fieldvalue = GUI.TextField(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue);
                         vl = float.Parse(fieldvalue);
                     }
                     else if (info.FieldType == typeof(bool))
                     {
                         bool fieldvalue = (bool)info.GetValue(select);
-                        GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
+                        GUI.Label(new Rect(x, y + i * 20, 100, 20), showName);
                         fieldvalue = GUI.Toggle(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue, "");
                         vl = fieldvalue;
                     }
                     else if (info.FieldType == typeof(string))
                     {
                         string fieldvalue = info.GetValue(select).ToString();
-                        GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
+                        GUI.Label(new Rect(x, y + i * 20, 100, 20), showName);
                         fieldvalue = GUI.TextField(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue);
                         vl = fieldvalue;
                     }
@@ -662,10 +715,6 @@ namespace Belong.BehaviorTree.Editor
 
     }
 }
-#endif
-
-
-
 
 
 

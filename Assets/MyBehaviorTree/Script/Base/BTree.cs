@@ -1,4 +1,9 @@
-﻿using LitJson;
+﻿/*
+ * Belong
+ * 2016-09-15
+*/
+
+using LitJson;
 using System;
 
 namespace Belong.BehaviorTree
@@ -8,8 +13,8 @@ namespace Belong.BehaviorTree
     /// </summary>
     public class BTree
     {
-        public string m_strName;   //描述
-        public BNode m_cRoot;	//root
+        public string m_treeName;   //描述
+        public BNode m_root;	//root
 
         public BTree()
         {
@@ -19,12 +24,12 @@ namespace Belong.BehaviorTree
         public void WriteJson(JsonData parent)
         {
             JsonData json = new JsonData();
-            json["name"] = this.m_strName;
-            if (this.m_cRoot != null)
+            json["name"] = this.m_treeName;
+            if (this.m_root != null)
             {
                 json["node"] = new JsonData();
                 json["node"].SetJsonType(JsonType.Object);
-                json["node"] = this.m_cRoot.WriteJson();
+                json["node"] = this.m_root.WriteJson();
             }
             parent.Add(json);
         }
@@ -32,32 +37,32 @@ namespace Belong.BehaviorTree
         //read json
         public void ReadJson(JsonData json)
         {
-            this.m_strName = json["name"].ToString();
-            this.m_cRoot = null;
+            this.m_treeName = json["name"].ToString();
+            this.m_root = null;
             if (json.Keys.Contains("node"))
             {
                 string typename = json["node"]["type"].ToString();
                 Type t = Type.GetType(typename);
-                this.m_cRoot = Activator.CreateInstance(t) as BNode;
-                this.m_cRoot.ReadJson(json["node"]);
+                this.m_root = Activator.CreateInstance(t) as BNode;
+                this.m_root.ReadJson(json["node"]);
             }
         }
 
         //set root node
         public void SetRoot(BNode node)
         {
-            this.m_cRoot = node;
+            this.m_root = node;
         }
 
         //clear root node
         public void Clear()
         {
-            this.m_cRoot = null;
+            this.m_root = null;
         }
 
         public void Run(object input)
         {
-            this.m_cRoot.RunNode(input);
+            this.m_root.RunNode(input);
         }
     }
 }

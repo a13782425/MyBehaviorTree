@@ -9,7 +9,7 @@ using System.Reflection;
 using LitJson;
 #if UNITY_EDITOR
 using UnityEditor;
-using Belong.BehaviorTree.Editor;
+//using Belong.BehaviorTree.Editor;
 #endif
 
 namespace Belong.BehaviorTree

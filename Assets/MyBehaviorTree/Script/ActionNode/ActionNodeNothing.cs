@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿/*
+ * Belong
+ * 2016-09-15
+*/
+using UnityEngine;
 
 namespace Belong.BehaviorTree
 {

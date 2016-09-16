@@ -1,4 +1,9 @@
-﻿using System;
+﻿/*
+ * Belong
+ * 2016-09-15
+*/
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -7,33 +12,22 @@ namespace Belong.BehaviorTree
 {
     public class BNodeFactory
     {
-        public List<Type> m_lstComposite = new List<Type>();
-        public List<Type> m_lstAction = new List<Type>();
-        public List<Type> m_lstCondition = new List<Type>();
-        public List<Type> m_lstDecorator = new List<Type>();
 
-        private static BNodeFactory s_cInstance;
-        public static BNodeFactory sInstance
+        private static BNodeFactory _instance;
+        public static BNodeFactory Instance
         {
             get
             {
-                if (s_cInstance == null)
+                if (_instance == null)
                 {
-                    s_cInstance = new BNodeFactory();
+                    _instance = new BNodeFactory();
                 }
-                return s_cInstance;
+                return _instance;
             }
         }
 
         public BNodeFactory()
         {
-            //		m_lstGen.Add(typeof(BNodeSequence));
-            //		m_lstGen.Add(typeof(BNodeSelector));
-            //		m_lstGen.Add(typeof(BNodeParallel));
-            //this.m_lstComposite = GetSubClass(typeof(BNodeComposite));
-            //this.m_lstAction = GetSubClass(typeof(BNodeAction));
-            //this.m_lstCondition = GetSubClass(typeof(BNodeCondition));
-            //this.m_lstDecorator = GetSubClass(typeof(BNodeDecorator));
         }
 
 #if UNITY_EDITOR
@@ -80,27 +74,27 @@ namespace Belong.BehaviorTree
         }
 #endif
 
-        public BNode Create(int index)
-        {
-            if (this.m_lstComposite.Count > index)
-            {
-                Type t = this.m_lstComposite[index];
-                BNode node = Activator.CreateInstance(t) as BNode;
-                return node;
-            }
-            Debug.LogError("The type index is none : " + index);
-            return null;
-        }
+        //public BNode Create(int index)
+        //{
+        //    if (this.m_lstComposite.Count > index)
+        //    {
+        //        Type t = this.m_lstComposite[index];
+        //        BNode node = Activator.CreateInstance(t) as BNode;
+        //        return node;
+        //    }
+        //    Debug.LogError("The type index is none : " + index);
+        //    return null;
+        //}
 
-        public string[] GetNodeLst()
-        {
-            string[] str = new string[this.m_lstComposite.Count];
-            for (int i = 0; i < this.m_lstComposite.Count; i++)
-            {
-                Type item = this.m_lstComposite[i];
-                str[i] = item.Name;
-            }
-            return str;
-        }
+        //public string[] GetNodeLst()
+        //{
+        //    string[] str = new string[this.m_lstComposite.Count];
+        //    for (int i = 0; i < this.m_lstComposite.Count; i++)
+        //    {
+        //        Type item = this.m_lstComposite[i];
+        //        str[i] = item.Name;
+        //    }
+        //    return str;
+        //}
     }
 }
