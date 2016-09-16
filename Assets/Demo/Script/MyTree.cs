@@ -3,7 +3,6 @@ using System.Collections;
 using Belong.BehaviorTree;
 public class MyTree : BAIBehaviorTree
 {
-    public Transform Test;
 
     private MyAttr input;
 

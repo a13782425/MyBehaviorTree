@@ -372,7 +372,7 @@ namespace Belong.BehaviorTree.Editor
             {
                 if (m_lstNodeEditor[i].CurRect.Contains(evt.mousePosition))
                 {
-                    //cur_node = m_lstNodeEditor[i].CurNode;
+                    cur_node = m_lstNodeEditor[i].CurNode;
                     if ((evt.button == 0 || evt.button == 1) && evt.isMouse)
                     {
                         select = m_lstNodeEditor[i].CurNode;
@@ -414,11 +414,76 @@ namespace Belong.BehaviorTree.Editor
                     GUI.Label(ne.CurLabRect, showName);
                 }
             }
-            if (select != null && evt.button == 1)
+            if (cur_node != null && evt.button == 1)
             {
                 if (evt.type == EventType.ContextClick)
                 {
                     GenericMenu menu = new GenericMenu();
+                    if (cur_node.GetType().IsSubclassOf(typeof(BNodeAction))||cur_node.GetType().IsSubclassOf(typeof(BNodeCondition)))
+                    {
+
+                    }
+                    else
+                    {
+                        foreach (Type item in m_lstComposite)
+                        {
+                            showName = item.Name;
+                            attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                            for (int i = 0; i < attrobjs.Length; i++)
+                            {
+                                BClassAttribute b = attrobjs[i] as BClassAttribute;
+                                if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                                {
+                                    showName = b.ShowName;
+                                }
+                            }
+                            menu.AddItem(new GUIContent("创建/Composite/" + showName), false, menu_add_callback, new object[] { cur_node, item });
+                        }
+
+                        foreach (Type item in m_lstAction)
+                        {
+                            showName = item.Name;
+                            attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                            for (int i = 0; i < attrobjs.Length; i++)
+                            {
+                                BClassAttribute b = attrobjs[i] as BClassAttribute;
+                                if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                                {
+                                    showName = b.ShowName;
+                                }
+                            }
+                            menu.AddItem(new GUIContent("创建/行为/" + showName), false, menu_add_callback, new object[] { cur_node, item });
+                        }
+                        foreach (Type item in m_lstCondition)
+                        {
+                            showName = item.Name;
+                            attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                            for (int i = 0; i < attrobjs.Length; i++)
+                            {
+                                BClassAttribute b = attrobjs[i] as BClassAttribute;
+                                if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                                {
+                                    showName = b.ShowName;
+                                }
+                            }
+                            menu.AddItem(new GUIContent("创建/Condition/" + showName), false, menu_add_callback, new object[] { cur_node, item });
+                        }
+                        foreach (Type item in m_lstDecorator)
+                        {
+                            showName = item.Name;
+                            attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
+                            for (int i = 0; i < attrobjs.Length; i++)
+                            {
+                                BClassAttribute b = attrobjs[i] as BClassAttribute;
+                                if (b != null && !string.IsNullOrEmpty(b.ShowName))
+                                {
+                                    showName = b.ShowName;
+                                }
+                            }
+                            menu.AddItem(new GUIContent("创建/Decorator/" + showName), false, menu_add_callback, new object[] { cur_node, item });
+                        }
+                    }
+
                     foreach (Type item in m_lstComposite)
                     {
                         showName = item.Name;
@@ -431,9 +496,8 @@ namespace Belong.BehaviorTree.Editor
                                 showName = b.ShowName;
                             }
                         }
-                        menu.AddItem(new GUIContent("创建/Composite/" + showName), false, menu_add_callback, new object[] { select, item });
+                        menu.AddItem(new GUIContent("更改/Composite/" + showName), false, menu_switch_callback, new object[] { cur_node, item });
                     }
-
                     foreach (Type item in m_lstAction)
                     {
                         showName = item.Name;
@@ -446,7 +510,7 @@ namespace Belong.BehaviorTree.Editor
                                 showName = b.ShowName;
                             }
                         }
-                        menu.AddItem(new GUIContent("创建/行为/" + showName), false, menu_add_callback, new object[] { select, item });
+                        menu.AddItem(new GUIContent("更改/行为/" + showName), false, menu_add_callback, new object[] { cur_node, item });
                     }
                     foreach (Type item in m_lstCondition)
                     {
@@ -460,39 +524,10 @@ namespace Belong.BehaviorTree.Editor
                                 showName = b.ShowName;
                             }
                         }
-                        menu.AddItem(new GUIContent("创建/Condition/" + showName), false, menu_add_callback, new object[] { select, item });
-                    }
-                    foreach (Type item in m_lstDecorator)
-                    {
-                        showName = item.Name;
-                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
-                        for (int i = 0; i < attrobjs.Length; i++)
-                        {
-                            BClassAttribute b = attrobjs[i] as BClassAttribute;
-                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
-                            {
-                                showName = b.ShowName;
-                            }
-                        }
-                        menu.AddItem(new GUIContent("创建/Decorator/" + showName), false, menu_add_callback, new object[] { select, item });
+                        menu.AddItem(new GUIContent("更改/Condition/" + showName), false, menu_add_callback, new object[] { cur_node, item });
                     }
 
-                    foreach (Type item in m_lstComposite)
-                    {
-                        showName = item.Name;
-                        attrobjs = item.GetCustomAttributes(typeof(BClassAttribute), false);
-                        for (int i = 0; i < attrobjs.Length; i++)
-                        {
-                            BClassAttribute b = attrobjs[i] as BClassAttribute;
-                            if (b != null && !string.IsNullOrEmpty(b.ShowName))
-                            {
-                                showName = b.ShowName;
-                            }
-                        }
-                        menu.AddItem(new GUIContent("更改/Composite/" + showName), false, menu_switch_callback, new object[] { select, item });
-                    }
-
-                    menu.AddItem(new GUIContent("删除"), false, menu_delete_node, select);
+                    menu.AddItem(new GUIContent("删除"), false, menu_delete_node, cur_node);
                     menu.ShowAsContext();
                 }
             }
