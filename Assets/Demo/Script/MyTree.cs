@@ -6,6 +6,7 @@ public class MyTree : BAIBehaviorTree
 
     private MyAttr input;
 
+
     // Use this for initialization
 
     protected override void Init()

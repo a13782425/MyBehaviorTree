@@ -294,6 +294,10 @@ namespace Belong.BehaviorTree.Editor
             }
             else
             {
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "json");
+                }
                 FileStream fs = File.OpenWrite(filePath);
                 fs.SetLength(0);
                 StreamWriter sw = new StreamWriter(fs);
@@ -510,7 +514,7 @@ namespace Belong.BehaviorTree.Editor
                                 showName = b.ShowName;
                             }
                         }
-                        menu.AddItem(new GUIContent("更改/行为/" + showName), false, menu_add_callback, new object[] { cur_node, item });
+                        menu.AddItem(new GUIContent("更改/行为/" + showName), false, menu_switch_callback, new object[] { cur_node, item });
                     }
                     foreach (Type item in m_lstCondition)
                     {
@@ -524,7 +528,7 @@ namespace Belong.BehaviorTree.Editor
                                 showName = b.ShowName;
                             }
                         }
-                        menu.AddItem(new GUIContent("更改/Condition/" + showName), false, menu_add_callback, new object[] { cur_node, item });
+                        menu.AddItem(new GUIContent("更改/Condition/" + showName), false, menu_switch_callback, new object[] { cur_node, item });
                     }
 
                     menu.AddItem(new GUIContent("删除"), false, menu_delete_node, cur_node);
