@@ -5,6 +5,8 @@
 
 using LitJson;
 using System;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Belong.BehaviorTree
 {
@@ -15,6 +17,9 @@ namespace Belong.BehaviorTree
     {
         public string m_treeName;   //描述
         public BNode m_root;	//root
+
+        public string AIGuid;
+
 
         public BTree()
         {
@@ -34,6 +39,11 @@ namespace Belong.BehaviorTree
             parent.Add(json);
         }
 
+        public void ReadJson(string json)
+        {
+            ReadJson(JsonMapper.ToObject(json));
+        }
+
         //read json
         public void ReadJson(JsonData json)
         {
@@ -44,6 +54,7 @@ namespace Belong.BehaviorTree
                 string typename = json["node"]["type"].ToString();
                 Type t = Type.GetType(typename);
                 this.m_root = Activator.CreateInstance(t) as BNode;
+                this.m_root.Tree = this;
                 this.m_root.ReadJson(json["node"]);
             }
         }
@@ -64,5 +75,24 @@ namespace Belong.BehaviorTree
         {
             this.m_root.RunNode(input);
         }
+
+        public BTree Clone ()
+        {
+            BinaryFormatter bf = new BinaryFormatter();
+
+            MemoryStream ms = new MemoryStream();
+
+            bf.Serialize(ms, this);
+
+            ms.Seek(0, SeekOrigin.Begin);
+
+            BTree tree = bf.Deserialize(ms) as BTree;
+            ms.Close();
+            ms.Dispose();
+
+            return tree;
+            //return this.MemberwiseClone() as BTree;
+        }
+
     }
 }

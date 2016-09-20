@@ -9,6 +9,7 @@ using System.Reflection;
 using LitJson;
 #if UNITY_EDITOR
 using UnityEditor;
+using System.Diagnostics;
 //using Belong.BehaviorTree.Editor;
 #endif
 
@@ -51,6 +52,8 @@ namespace Belong.BehaviorTree
         /// </summary>
         [BHideField]
         public string Name = "Node";
+        [BHideField]
+        public BTree Tree = null;
         /// <summary>
         /// 父节点
         /// </summary>
@@ -63,6 +66,17 @@ namespace Belong.BehaviorTree
         public List<BNode> ChildList = new List<BNode>();
 
         private ActionResult m_eState;
+
+        private BAIBehaviorTree onwer = null;
+
+        public BAIBehaviorTree Onwer
+        {
+            get
+            {
+                return onwer;
+            }
+        }
+
 
         #endregion
 
@@ -114,10 +128,12 @@ namespace Belong.BehaviorTree
                 Type tt = Type.GetType(typename);
                 BNode enode = Activator.CreateInstance(tt) as BNode;
                 enode.ReadJson(json["child"][i]);
+                enode.Tree = this.Tree;
                 enode.Parent = this;
                 this.AddChild(enode);
             }
         }
+
         /// <summary>
         /// 写json，编辑器状态下用的较多
         /// </summary>
@@ -154,7 +170,7 @@ namespace Belong.BehaviorTree
                 if (!info.IsPublic)
                 {
                     objs = info.GetCustomAttributes(typeof(BFieldAttribute), false);
-                    if (objs.Length<1)
+                    if (objs.Length < 1)
                     {
                         isBreak = true;
                         goto Break;
@@ -173,10 +189,6 @@ namespace Belong.BehaviorTree
                         }
                     }
                 }
-
-
-
-
             End: json["arg"][info.Name] = info.GetValue(this).ToString();
             }
 
@@ -197,6 +209,11 @@ namespace Belong.BehaviorTree
         /// <returns></returns>
         public ActionResult RunNode(object input)
         {
+            if (onwer == null)
+            {
+                onwer = AIManager.Instance.GetAI(Tree.AIGuid);
+            }
+            onwer.CurNode = this;
             if (this.m_eState == ActionResult.NONE)
             {
                 this.OnEnter(input);
@@ -209,32 +226,6 @@ namespace Belong.BehaviorTree
                 this.m_eState = ActionResult.NONE;
             }
             return res;
-        }
-
-        /// <summary>
-        /// 当前节点进入操作
-        /// </summary>
-        /// <param name="input"></param>
-        public virtual void OnEnter(object input)
-        {
-            //
-        }
-        /// <summary>
-        /// 当前节点执行操作
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public virtual ActionResult Excute(object input)
-        {
-            return ActionResult.SUCCESS;
-        }
-        /// <summary>
-        /// 当前节点退出时候的操作
-        /// </summary>
-        /// <param name="input"></param>
-        public virtual void OnExit(object input)
-        {
-            //
         }
 
         /// <summary>
@@ -309,271 +300,84 @@ namespace Belong.BehaviorTree
 
         #endregion
 
+        #region 重载函数
 
-        #region Editor界面
+        /// <summary>
+        /// 当前节点进入操作
+        /// </summary>
+        /// <param name="input"></param>
+        public virtual void OnEnter(object input)
+        {
+            //
+        }
+        /// <summary>
+        /// 当前节点执行操作
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public virtual ActionResult Excute(object input)
+        {
+            return ActionResult.SUCCESS;
+        }
+        /// <summary>
+        /// 当前节点退出时候的操作
+        /// </summary>
+        /// <param name="input"></param>
+        public virtual void OnExit(object input)
+        {
+        }
 
-#if UNITY_EDITOR
-        ////render editor
-        //public void RenderEditor(int x, int y)
-        //{
-        //    try
-        //    {
-        //        Type t = this.GetType();
-        //        FieldInfo[] fieldInfos = t.GetFields(BindingFlags.Public | BindingFlags.NonPublic|BindingFlags.Instance);
-        //        for (int i = 0; i < fieldInfos.Length; i++)
-        //        {
-        //            FieldInfo info = fieldInfos[i];
-        //            string showName = info.Name;
-        //            object[] objs = info.GetCustomAttributes(typeof(BHideFieldAttribute), false);
-        //            bool isBreak = false;
-        //            for (int j = 0; j < objs.Length; j++)
-        //            {
-        //                BHideFieldAttribute bh = objs[j] as BHideFieldAttribute;
-        //                if (bh != null)
-        //                {
-        //                    isBreak = true;
-        //                    break;
-        //                }
-        //            }
-        //        Break: if (isBreak)
-        //            {
-        //                continue;
-        //            }
+        public virtual void OnTriggerEnter(Collider collider)
+        {
 
-        //            if (!info.IsPublic)
-        //            {
-        //                objs = info.GetCustomAttributes(typeof(BFieldAttribute), false);
-        //                if (objs.Length<1)
-        //                {
-        //                    isBreak = true;
-        //                    goto Break;
-        //                }
-        //                for (int j = 0; j < objs.Length; j++)
-        //                {
-        //                    BFieldAttribute bh = objs[j] as BFieldAttribute;
-        //                    if (bh != null)
-        //                    {
-        //                        if (!string.IsNullOrEmpty(bh.ShowName))
-        //                        {
-        //                            showName = bh.ShowName;
-        //                        }
-        //                        goto End;
-        //                    }
-        //                    else
-        //                    {
-        //                        isBreak = true;
-        //                        goto Break;
-        //                    }
-        //                }
-        //            }
-        //            else
-        //            {
-        //                objs = info.GetCustomAttributes(typeof(BFieldAttribute), false);
-        //                for (int j = 0; j < objs.Length; j++)
-        //                {
-        //                    BFieldAttribute bh = objs[j] as BFieldAttribute;
-        //                    if (bh != null)
-        //                    {
-        //                        if (!string.IsNullOrEmpty(bh.ShowName))
-        //                        {
-        //                            showName = bh.ShowName;
-        //                        }
-        //                        goto End;
-        //                    }
-        //                }
-        //            }
+        }
+        public virtual void OnTriggerExit(Collider collider)
+        {
 
-        //        //
-        //        End: object vl = null;
-        //            if (info.FieldType == typeof(int))
-        //            {
-        //                string fieldvalue = info.GetValue(this).ToString();
-        //                GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
-        //                fieldvalue = GUI.TextField(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue);
-        //                vl = int.Parse(fieldvalue);
-        //            }
-        //            else if (info.FieldType == typeof(float))
-        //            {
-        //                string fieldvalue = info.GetValue(this).ToString();
-        //                GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
-        //                fieldvalue = GUI.TextField(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue);
-        //                vl = float.Parse(fieldvalue);
-        //            }
-        //            else if (info.FieldType == typeof(bool))
-        //            {
-        //                bool fieldvalue = (bool)info.GetValue(this);
-        //                GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
-        //                fieldvalue = GUI.Toggle(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue, "");
-        //                vl = fieldvalue;
-        //            }
-        //            else if (info.FieldType == typeof(string))
-        //            {
-        //                string fieldvalue = info.GetValue(this).ToString();
-        //                GUI.Label(new Rect(x, y + i * 20, 100, 20), info.Name);
-        //                fieldvalue = GUI.TextField(new Rect(x + 100, y + i * 20, 100, 20), fieldvalue);
-        //                vl = fieldvalue;
-        //            }
+        }
+        public virtual void OnTriggerStay(Collider collider)
+        {
 
-        //            info.SetValue(this, vl);
-        //        }
-        //    }
-        //    catch (System.Exception ex)
-        //    {
-        //        //
-        //    }
-        //}
+        }
+        public virtual void OnCollisionEnter(Collision collision)
+        {
 
-        ////menu add decision node
-        //private void menu_add_callback(object arg)
-        //{
-        //    Type t = arg as Type;
-        //    BNode node = Activator.CreateInstance(t) as BNode;
+        }
+        public virtual void OnCollisionExit(Collision collision)
+        {
 
-        //    this.AddChild(node);
-        //    node.Parent = this;
-        //    BTreeWin.sInstance.Repaint();
-        //}
-        ////menu switch node
-        //private void menu_switch_callback(object arg)
-        //{
-        //    Type t = arg as Type;
-        //    BNode node = Activator.CreateInstance(t) as BNode;
-        //    node.Parent = this.Parent;
-        //    foreach (BNode item in this.ChildList)
-        //    {
-        //        node.AddChild(item);
-        //    }
-        //    if (this.Parent != null)
-        //    {
-        //        this.Parent.ReplaceChild(this, node);
-        //    }
-        //    else if (BTreeWin.cur_tree.m_cRoot == this)
-        //    {
-        //        BTreeWin.cur_tree.m_cRoot = node;
-        //    }
-        //    BTreeWin.cur_node = node;
-        //    BTreeWin.sInstance.Repaint();
-        //}
+        }
+        public virtual void OnCollisionStay(Collision collision)
+        {
 
-        ////menu delete node
-        //private void menu_delete_node(object arg)
-        //{
-        //    if (this.Parent != null)
-        //    {
-        //        this.Parent.RemoveChild(this);
-        //    }
-        //    this.Parent = null;
-        //    BTreeWin.select = null;
-        //    BTreeWin.cur_node = null;
-        //    BTreeWin.sInstance.Repaint();
-        //}
+        }
+        public virtual void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+        }
+        public virtual void OnCollisionEnter2D(Collision2D collision)
+        {
+        }
+        public virtual void OnCollisionStay2D(Collision2D collision)
+        {
+        }
+        public virtual void OnCollisionExit2D(Collision2D collision)
+        {
+        }
+        public virtual void OnTriggerEnter2D(Collider2D collider)
+        {
+        }
+        public virtual void OnTriggerStay2D(Collider2D collider)
+        {
+        }
+        public virtual void OnTriggerExit2D(Collider2D collider)
+        {
+        }
 
-        ////render
-        //public virtual void Render(int x, ref int y)
-        //{
-        //    Event evt = Event.current;
-        //    if (BTreeWin.cur_node == this)
-        //    {
-        //        Texture2D texRed = new Texture2D(1, 1);
-        //        texRed.SetPixel(0, 0, Color.blue);
-        //        texRed.Apply();
-        //        GUI.DrawTexture(new Rect(0, y, BTreeWin.sInstance.position.width, BTreeWin.NODE_HEIGHT), texRed);
-        //    }
 
-        //    Rect moveRect = new Rect(x, y, BTreeWin.sInstance.position.width - BTreeWin.GUI_WIDTH, 5);
-        //    bool is_move_node = false;
-        //    if (BTreeWin.select != null && moveRect.Contains(evt.mousePosition))
-        //    {
-        //        is_move_node = true;
-        //        Texture2D tex = new Texture2D(1, 1);
-        //        tex.SetPixel(0, 0, Color.green);
-        //        tex.Apply();
-        //        GUI.DrawTexture(new Rect(x, y, BTreeWin.sInstance.position.width, 2), tex);
-        //        if (evt.button == 0 && evt.type == EventType.MouseUp)
-        //        {
-        //            if (this != BTreeWin.select && this.Parent != null)
-        //            {
-        //                BTreeWin.select.Parent.RemoveChild(BTreeWin.select);
-        //                BTreeWin.select.Parent = this.Parent;
-        //                this.Parent.InsertChild(this, BTreeWin.select);
-        //            }
-        //            BTreeWin.select = null;
-        //            BTreeWin.sInstance.Repaint();
-        //        }
-        //    }
+        #endregion
 
-        //    Rect rect = new Rect(x, y, BTreeWin.sInstance.position.width - BTreeWin.GUI_WIDTH, BTreeWin.NODE_HEIGHT);
-        //    if (!is_move_node && rect.Contains(evt.mousePosition))
-        //    {
-        //        if (BTreeWin.select != null)
-        //        {
-        //            Texture2D texRed = new Texture2D(1, 1);
-        //            texRed.SetPixel(0, 0, Color.red);
-        //            texRed.Apply();
-        //            GUI.DrawTexture(new Rect(0, y, BTreeWin.sInstance.position.width, BTreeWin.NODE_HEIGHT), texRed);
-        //        }
-        //        if (evt.type == EventType.ContextClick)
-        //        {
-        //            GenericMenu menu = new GenericMenu();
-        //            foreach (Type item in BNodeFactory.sInstance.m_lstComposite)
-        //            {
-        //                menu.AddItem(new GUIContent("Create/Composite/" + item.Name), false, menu_add_callback, item);
-        //            }
+        #region 私有方法
 
-        //            foreach (Type item in BNodeFactory.sInstance.m_lstAction)
-        //            {
-        //                menu.AddItem(new GUIContent("Create/Action/" + item.Name), false, menu_add_callback, item);
-        //            }
-        //            foreach (Type item in BNodeFactory.sInstance.m_lstCondition)
-        //            {
-        //                menu.AddItem(new GUIContent("Create/Condition/" + item.Name), false, menu_add_callback, item);
-        //            }
-        //            foreach (Type item in BNodeFactory.sInstance.m_lstDecorator)
-        //            {
-        //                menu.AddItem(new GUIContent("Create/Decorator/" + item.Name), false, menu_add_callback, item);
-        //            }
-
-        //            foreach (Type item in BNodeFactory.sInstance.m_lstComposite)
-        //            {
-        //                menu.AddItem(new GUIContent("Switch/Composite/" + item.Name), false, menu_switch_callback, item);
-        //            }
-
-        //            menu.AddItem(new GUIContent("Delete"), false, menu_delete_node, "");
-        //            menu.ShowAsContext();
-        //        }
-        //        if (evt.button == 0 && evt.type == EventType.MouseDown && this != BTreeWin.cur_tree.m_cRoot)
-        //        {
-        //            BTreeWin.select = this;
-        //            BTreeWin.cur_node = this;
-        //        }
-        //        if (evt.button == 0 && evt.type == EventType.MouseUp && BTreeWin.select != null)
-        //        {
-        //            if (this != BTreeWin.select)
-        //            {
-        //                BTreeWin.select.Parent.RemoveChild(BTreeWin.select);
-        //                BTreeWin.select.Parent = this;
-        //                this.AddChild(BTreeWin.select);
-        //            }
-        //            BTreeWin.select = null;
-        //            BTreeWin.sInstance.Repaint();
-        //        }
-        //    }
-        //    GUI.Label(new Rect(x, y, BTreeWin.sInstance.position.width, BTreeWin.NODE_HEIGHT), this.Name);
-
-        //    /////////////////// line //////////////////////
-        //    Vector3 pos1 = new Vector3(x + BTreeWin.NODE_WIDTH / 2, y + BTreeWin.NODE_HEIGHT, 0);
-        //    Handles.color = Color.red;
-        //    for (int i = 0; i < this.ChildList.Count; i++)
-        //    {
-        //        y = y + BTreeWin.NODE_HEIGHT;
-
-        //        Vector3 pos2 = new Vector3(x + BTreeWin.NODE_WIDTH / 2, y + BTreeWin.NODE_HEIGHT / 2, 0);
-        //        Vector3 pos3 = new Vector3(x + BTreeWin.NODE_WIDTH, y + BTreeWin.NODE_HEIGHT / 2, 0);
-        //        this.ChildList[i].Render(x + BTreeWin.NODE_WIDTH, ref y);
-        //        Handles.DrawPolyLine(new Vector3[] { pos1, pos2, pos3 });
-        //    }
-        //}
-#endif
         #endregion
 
     }

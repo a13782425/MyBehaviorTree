@@ -5,7 +5,7 @@ public class MyTree : BAIBehaviorTree
 {
 
     private MyAttr input;
-
+    public int num;
 
     // Use this for initialization
 

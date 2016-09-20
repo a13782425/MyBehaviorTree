@@ -20,7 +20,9 @@ namespace Belong.BehaviorTree
         LateUpdate,
         Repeating
     }
-
+    /// <summary>
+    /// 不要使用Awake方法，请使用Init方法代替Awake
+    /// </summary>
     public class BAIBehaviorTree : MonoBehaviour
     {
 
@@ -79,6 +81,8 @@ namespace Belong.BehaviorTree
         /// 执行计时
         /// </summary>
         private float m_time = 0f;
+        [HideInInspector]
+        public BNode CurNode = null;
 
         #endregion
 
@@ -97,20 +101,32 @@ namespace Belong.BehaviorTree
         {
             Init();
             AIGuid = Guid.NewGuid().ToString();
+            CheckData();
+
             if (AITreeText == null)
             {
                 Debug.LogError("没有树文件！");
                 return;
             }
-            if (string.IsNullOrEmpty(AITreeName))
+            try
             {
-                AITreeName = BTreeMgr.Instance.Load(AITreeText.text);
+                if (string.IsNullOrEmpty(AITreeName))
+                {
+                    AITreeName = BTreeMgr.Instance.Load(AITreeText.text);
+                }
+                else
+                {
+                    BTreeMgr.Instance.Load(AITreeText.text);
+                }
             }
-            else
+            catch (Exception)
             {
-                BTreeMgr.Instance.Load(AITreeText.text);
+                Debug.LogError("请使用BTree/Create创建树文件，在对其赋值");
+                return;
             }
             m_tree = BTreeMgr.Instance.GetTree(AITreeName);
+            m_tree.AIGuid = AIGuid;
+            AIManager.Instance.AddAI(this);
             if (string.IsNullOrEmpty(AIName))
             {
                 AIName = AITreeName;
@@ -194,6 +210,64 @@ namespace Belong.BehaviorTree
         {
 
         }
+        protected void OnTriggerEnter(Collider collider)
+        {
+            CurNode.OnTriggerEnter(collider);
+        }
+
+        protected void OnTriggerExit(Collider collider)
+        {
+            CurNode.OnTriggerExit(collider);
+        }
+
+        protected void OnTriggerStay(Collider collider)
+        {
+            CurNode.OnTriggerStay(collider);
+        }
+        protected void OnCollisionEnter(Collision collision)
+        {
+            CurNode.OnCollisionEnter(collision);
+        }
+
+        protected void OnCollisionExit(Collision collision)
+        {
+            CurNode.OnCollisionExit(collision);
+        }
+
+        protected void OnCollisionStay(Collision collision)
+        {
+            CurNode.OnCollisionStay(collision);
+        }
+
+        protected void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            CurNode.OnControllerColliderHit(hit);
+        }
+
+        protected void OnCollisionEnter2D(Collision2D collision)
+        {
+            CurNode.OnCollisionEnter2D(collision);
+        }
+        protected void OnCollisionStay2D(Collision2D collision)
+        {
+            CurNode.OnCollisionStay2D(collision);
+        }
+        protected void OnCollisionExit2D(Collision2D collision)
+        {
+            CurNode.OnCollisionExit2D(collision);
+        }
+        protected void OnTriggerEnter2D(Collider2D collider)
+        {
+            CurNode.OnTriggerEnter2D(collider);
+        }
+        protected void OnTriggerStay2D(Collider2D collider)
+        {
+            CurNode.OnTriggerStay2D(collider);
+        }
+        protected void OnTriggerExit2D(Collider2D collider)
+        {
+            CurNode.OnTriggerExit2D(collider);
+        }
 
         #endregion
 
@@ -236,6 +310,18 @@ namespace Belong.BehaviorTree
                     break;
                 default:
                     break;
+            }
+        }
+
+        #endregion
+
+        #region 私有方法
+
+        private void CheckData()
+        {
+            if (Interval < 0.00005f)
+            {
+                Interval = 0.00005f;
             }
         }
 

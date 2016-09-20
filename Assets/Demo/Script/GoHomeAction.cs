@@ -23,4 +23,16 @@ public class GoHomeAction : BNodeAction
         }
         return ActionResult.RUNNING;
     }
+
+    public override void OnCollisionEnter(Collision collision)
+    {
+        Debug.LogError("OnCollisionEnter");
+        base.OnCollisionEnter(collision);
+    }
+
+    public override void OnCollisionStay(Collision collision)
+    {
+        Debug.LogError("OnCollisionStay");
+        base.OnCollisionStay(collision);
+    }
 }

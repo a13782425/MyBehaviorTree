@@ -10,7 +10,8 @@ public class AttackAction : BNodeAction
 
     public override void OnEnter(object input)
     {
-        Debug.LogError("进入伤害");
+        Debug.LogError(Onwer.name);
+        //Debug.LogError("进入伤害");
     }
 
     public override ActionResult Excute(object input)

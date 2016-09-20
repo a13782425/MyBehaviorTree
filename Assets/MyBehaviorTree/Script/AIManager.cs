@@ -23,7 +23,7 @@ namespace Belong.BehaviorTree
                 if (_instance == null)
                 {
                     GameObject obj = new GameObject("AIManager");
-                    obj.AddComponent<AIManager>();
+                    _instance = obj.AddComponent<AIManager>();
                 }
                 return _instance;
             }
@@ -36,10 +36,18 @@ namespace Belong.BehaviorTree
 
         public void AddAI(BAIBehaviorTree tree)
         {
-            if (m_dic.ContainsKey(tree.AIGuid))
+            if (!m_dic.ContainsKey(tree.AIGuid))
             {
                 m_dic.Add(tree.AIGuid, tree);
             }
+        }
+        public BAIBehaviorTree GetAI(string key)
+        {
+            if (m_dic.ContainsKey(key))
+            {
+                return m_dic[key];
+            }
+            return null;
         }
     }
 }

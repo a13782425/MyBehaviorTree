@@ -9,7 +9,8 @@ public class CheckHealth : BNodeCondition
 
     public override void OnEnter(object input)
     {
-        Debug.LogError("判断");
+        Debug.LogError(Onwer.name);
+        //Debug.LogError("判断");
     }
 
     public override ActionResult Excute(object input)

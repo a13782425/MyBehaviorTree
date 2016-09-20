@@ -36,6 +36,7 @@ namespace Belong.BehaviorTree.Editor
         private static int select_create_node_id = -1;
 
         public static BNode select;
+        public static BNode downSelect;
 
         //temp value
         private Vector2 m_cScrollPos = new Vector2(0, 0);
@@ -60,7 +61,7 @@ namespace Belong.BehaviorTree.Editor
         //    }
         //}// = new List<NodeEditor>();
 
-        [MenuItem("BTree/Editor")]
+        [MenuItem("BTree/Create")]
         static void initwin()
         {
             BTreeWin win = (BTreeWin)BTreeWin.GetWindow(typeof(BTreeWin));
@@ -344,7 +345,7 @@ namespace Belong.BehaviorTree.Editor
             ne.CurLabRect = new Rect(x, y, sInstance.position.width, NODE_HEIGHT);
             m_lstNodeEditor.Add(ne);
             /////////////////// line //////////////////////
-            //Vector3 pos1 = new Vector3(x + NODE_WIDTH / 2, y + NODE_HEIGHT, 0);
+            Vector3 pos1 = new Vector3(x + NODE_WIDTH / 2, y + NODE_HEIGHT, 0);
             Handles.color = Color.red;
             if (node != null && node.ChildList != null)
             {
@@ -352,11 +353,11 @@ namespace Belong.BehaviorTree.Editor
                 {
                     y = y + NODE_HEIGHT;
 
-                    //Vector3 pos2 = new Vector3(x + NODE_WIDTH / 2, y + NODE_HEIGHT / 2, 0);
-                    //Vector3 pos3 = new Vector3(x + NODE_WIDTH, y + NODE_HEIGHT / 2, 0);
+                    Vector3 pos2 = new Vector3(x + NODE_WIDTH / 2, y + NODE_HEIGHT / 2, 0);
+                    Vector3 pos3 = new Vector3(x + NODE_WIDTH, y + NODE_HEIGHT / 2, 0);
                     RenderNode(node.ChildList[i], x + NODE_WIDTH, ref y);
                     //node.ChildList[i].Render(x + NODE_WIDTH, ref y);
-                    //Handles.DrawPolyLine(new Vector3[] { pos1, pos2, pos3 });
+                    Handles.DrawPolyLine(new Vector3[] { pos1, pos2, pos3 });
                 }
             }
 
@@ -367,6 +368,11 @@ namespace Belong.BehaviorTree.Editor
 
         public void RenderNodeContext()
         {
+            if (Input.GetMouseButton(0))
+            {
+                Debug.LogError("sdasdas");
+
+            }
             string showName = string.Empty;
             object[] attrobjs = null;
             Event evt = Event.current;
@@ -377,9 +383,10 @@ namespace Belong.BehaviorTree.Editor
                 if (m_lstNodeEditor[i].CurRect.Contains(evt.mousePosition))
                 {
                     cur_node = m_lstNodeEditor[i].CurNode;
-                    if ((evt.button == 0 || evt.button == 1) && evt.isMouse)
+                    if ((evt.button == 0) && evt.type == EventType.MouseDown)// && cur_node != cur_tree.m_root)
                     {
                         select = m_lstNodeEditor[i].CurNode;
+                        downSelect = select;
                     }
                 }
                 else
@@ -396,6 +403,64 @@ namespace Belong.BehaviorTree.Editor
                 Repaint();
                 return;
             }
+
+
+            if (downSelect != null && cur_node != null && downSelect != cur_node)
+            {
+
+                NodeEditor ne = m_lstNodeEditor.Find(a => a.CurNode == cur_node);
+                Rect moveRect = new Rect(0, ne.CurRect.y, position.width - BTreeWin.GUI_WIDTH, 5);
+                if (select != null && moveRect.Contains(evt.mousePosition))
+                {
+                    Texture2D tex = new Texture2D(1, 1);
+                    tex.SetPixel(0, 0, Color.blue);
+                    tex.Apply();
+                    GUI.DrawTexture(new Rect(0, ne.CurRect.y, BTreeWin.sInstance.position.width, 2), tex);
+                    if (evt.button == 0 && evt.type == EventType.MouseUp)
+                    {
+                        //if (cur_node.GetType().IsSubclassOf(typeof(BNodeAction)) || cur_node.GetType().IsSubclassOf(typeof(BNodeCondition)))
+                        //{
+
+                        //}
+                        //else
+                        {
+                            if (select != downSelect && downSelect.Parent != null)
+                            {
+                                downSelect.Parent.RemoveChild(BTreeWin.select);
+                                downSelect.Parent = cur_node.Parent;
+                                cur_node.Parent.InsertChild(cur_node.Parent, downSelect);
+                            }
+                            downSelect = null;
+                            Repaint();
+                        }
+
+                    }
+                }
+
+            }
+            if (evt.type == EventType.MouseUp)
+            {
+                if (downSelect != null)
+                {
+                    if (cur_node != downSelect)
+                    {
+                        if (cur_node.GetType().IsSubclassOf(typeof(BNodeAction)) || cur_node.GetType().IsSubclassOf(typeof(BNodeCondition)))
+                        {
+
+                        }
+                        else
+                        {
+                            downSelect.Parent.RemoveChild(downSelect);
+                            downSelect.Parent = cur_node;
+                            cur_node.AddChild(BTreeWin.select);
+                        }
+
+                    }
+                    downSelect = null;
+                }
+            }
+
+
             if (select != null)
             {
                 Texture2D tex = new Texture2D(1, 1);
@@ -418,12 +483,14 @@ namespace Belong.BehaviorTree.Editor
                     GUI.Label(ne.CurLabRect, showName);
                 }
             }
-            if (cur_node != null && evt.button == 1)
+
+
+            if (cur_node != null && cur_node == select && evt.button == 1)
             {
                 if (evt.type == EventType.ContextClick)
                 {
                     GenericMenu menu = new GenericMenu();
-                    if (cur_node.GetType().IsSubclassOf(typeof(BNodeAction))||cur_node.GetType().IsSubclassOf(typeof(BNodeCondition)))
+                    if (cur_node.GetType().IsSubclassOf(typeof(BNodeAction)) || cur_node.GetType().IsSubclassOf(typeof(BNodeCondition)))
                     {
 
                     }

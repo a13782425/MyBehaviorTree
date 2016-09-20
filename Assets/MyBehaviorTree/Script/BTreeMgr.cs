@@ -15,6 +15,7 @@ namespace Belong.BehaviorTree
     public class BTreeMgr
     {
         public Dictionary<string, BTree> m_mapTree = new Dictionary<string, BTree>();
+        public Dictionary<string, string> m_mapJson = new Dictionary<string, string>();
 
         private static BTreeMgr _instance;
         public static BTreeMgr Instance
@@ -47,23 +48,34 @@ namespace Belong.BehaviorTree
             int count = json.Count;
             for (int i = 0; i < count; i++)
             {
-
-                BTree bt = new BTree();
                 JsonData data = json[i];
-                bt.ReadJson(data);
+                BTree tree = new BTree();
+                tree.ReadJson(data);
                 if (i == 0)
                 {
-                    treeName = bt.m_treeName;
+                    treeName = data["name"].ToString();
                 }
-                this.m_mapTree.Add(bt.m_treeName, bt);
+                if (!this.m_mapJson.ContainsKey(data["name"].ToString()))
+                {
+                    this.m_mapJson.Add(data["name"].ToString(), data.ToJson());
+                }
+                if (!this.m_mapTree.ContainsKey(tree.m_treeName))
+                {
+                    this.m_mapTree.Add(tree.m_treeName, tree);
+                }
+
             }
             return treeName;
         }
 
         public BTree GetTree(string name)
         {
-            if (this.m_mapTree.ContainsKey(name))
-                return this.m_mapTree[name];
+            if (this.m_mapJson.ContainsKey(name))
+            {
+                BTree tree = new BTree();
+                tree.ReadJson(this.m_mapJson[name]);
+                return tree;
+            }
             return null;
         }
 
@@ -95,6 +107,13 @@ namespace Belong.BehaviorTree
             else
                 Debug.LogError("The tree id is not exist.");
             return;
+        }
+
+        private BTree Clone(BTree tree)
+        {
+
+
+            return tree.Clone();
         }
     }
 }
