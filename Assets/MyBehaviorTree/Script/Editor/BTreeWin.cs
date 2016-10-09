@@ -12,6 +12,9 @@ using UnityEditor;
 using UnityEngine;
 using Belong.BehaviorTree;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Belong.BehaviorTree.Editor
 {
@@ -80,8 +83,6 @@ namespace Belong.BehaviorTree.Editor
 
         void OnGUI()
         {
-            //////////////////// draw the tree /////////////////////
-            //this.m_cScrollPos = GUI.BeginScrollView(new Rect(0, 0, position.width - 240, position.height), this.m_cScrollPos, new Rect(0, 0, this.maxSize.x, this.maxSize.y));
             this.m_cScrollPos = GUI.BeginScrollView(new Rect(0, 0, position.width - 240, position.height), this.m_cScrollPos, new Rect(0, 0, this.position.width - GUI_WIDTH - 15, this.maxSize.y));
 
             Texture2D tex1 = new Texture2D(1, 1);
@@ -99,7 +100,7 @@ namespace Belong.BehaviorTree.Editor
                     GUI.DrawTexture(new Rect(0, i * NODE_HEIGHT, this.position.width - GUI_WIDTH - 15, NODE_HEIGHT), tex2);
             }
 
-            if (cur_tree != null && cur_tree.m_root != null && !string.IsNullOrEmpty(filePath))
+            if (cur_tree != null && cur_tree.m_root != null)// && !string.IsNullOrEmpty(filePath))
             {
                 m_lstNodeEditor.Clear();
                 int xx = 0;
@@ -129,7 +130,15 @@ namespace Belong.BehaviorTree.Editor
             }
             else
             {
-                cur_tree = null;
+                if (BTreeMgr.Instance.GetTrees().Count > 0)
+                {
+                    lst = BTreeMgr.Instance.GetTrees();
+                }
+                else
+                {
+                    cur_tree = null;
+                }
+
             }
 
             if (GUI.Button(new Rect(x, y, 100, 40), "加载文件"))
@@ -145,7 +154,14 @@ namespace Belong.BehaviorTree.Editor
             }
             if (GUI.Button(new Rect(x + 100, y, 100, 40), "保存"))
             {
-                EditorSave();
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    EditorSave(false);
+                }
+                else
+                {
+                    EditorSave();
+                }
                 AssetDatabase.Refresh();
                 //BTreeMgr.sInstance.EditorLoad();
             }
@@ -156,12 +172,6 @@ namespace Belong.BehaviorTree.Editor
                 //BTreeMgr.sInstance.EditorSave();
                 AssetDatabase.Refresh();
             }
-            //y += 40;
-            //if (GUI.Button(new Rect(x, y, 200, 40), "Save BTree"))
-            //{
-            //    //			BTreeMgr.sInstance.SaveEx();
-            //    AssetDatabase.Refresh();
-            //}
             y += 40;
             GUI.Label(new Rect(x, y, 200, 20), "=======================");
             y += 20;
@@ -307,6 +317,7 @@ namespace Belong.BehaviorTree.Editor
                 sw.Close();
                 fs.Close();
             }
+
             Debug.Log(filePath);
         }
 
@@ -418,21 +429,21 @@ namespace Belong.BehaviorTree.Editor
                     GUI.DrawTexture(new Rect(0, ne.CurRect.y, BTreeWin.sInstance.position.width, 2), tex);
                     if (evt.button == 0 && evt.type == EventType.MouseUp)
                     {
-                        //if (cur_node.GetType().IsSubclassOf(typeof(BNodeAction)) || cur_node.GetType().IsSubclassOf(typeof(BNodeCondition)))
+                        //Debug.LogError(cur_node.Name);
+                        //if (select != downSelect && downSelect.Parent != null)
                         //{
-
+                        //    downSelect.Parent.RemoveChild(BTreeWin.select);
+                        //    downSelect.Parent = cur_node.Parent;
+                        //    cur_node.Parent.InsertChild(cur_node.Parent, downSelect);
+                        //    Debug.LogError("222");
                         //}
-                        //else
+                        if (downSelect.Parent != null && downSelect.Parent == cur_node.Parent)
                         {
-                            if (select != downSelect && downSelect.Parent != null)
-                            {
-                                downSelect.Parent.RemoveChild(BTreeWin.select);
-                                downSelect.Parent = cur_node.Parent;
-                                cur_node.Parent.InsertChild(cur_node.Parent, downSelect);
-                            }
-                            downSelect = null;
-                            Repaint();
+                            downSelect.Parent.RemoveChild(select);
+                            downSelect.Parent.InsertChild(cur_node, select);
                         }
+                        downSelect = null;
+                        Repaint();
 
                     }
                 }
