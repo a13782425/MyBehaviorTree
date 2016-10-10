@@ -300,14 +300,18 @@ namespace Belong.BehaviorTree.Editor
             }
             if (!isSave)
             {
-                filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "json");
+                filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "b");
+                //FileStream fs = File.Create(filePath);
+                //BinaryFormatter binFormat = new BinaryFormatter();//创建二进制序列化器
+                //binFormat.Serialize(fs, data.ToJson());
+                //fs.Close();
                 File.WriteAllText(filePath, data.ToJson());
             }
             else
             {
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "json");
+                    filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "b");
                 }
                 FileStream fs = File.OpenWrite(filePath);
                 fs.SetLength(0);
@@ -326,7 +330,7 @@ namespace Belong.BehaviorTree.Editor
         /// </summary>
         public void EditorLoad()
         {
-            filePath = EditorUtility.OpenFilePanel("Bahvior Tree", Application.dataPath, "json");
+            filePath = EditorUtility.OpenFilePanel("Bahvior Tree", Application.dataPath, "b");
             if (string.IsNullOrEmpty(filePath)) return;
             BTreeMgr.Instance.m_mapTree.Clear();
             string txt = File.ReadAllText(filePath);
