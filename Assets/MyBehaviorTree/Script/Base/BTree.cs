@@ -25,7 +25,10 @@ namespace Belong.BehaviorTree
         {
         }
 
-        //write json
+        /// <summary>
+        /// 写Json
+        /// </summary>
+        /// <param name="parent"></param>
         public void WriteJson(JsonData parent)
         {
             JsonData json = new JsonData();
@@ -44,7 +47,10 @@ namespace Belong.BehaviorTree
             ReadJson(JsonMapper.ToObject(json));
         }
 
-        //read json
+        /// <summary>
+        /// 读取Json
+        /// </summary>
+        /// <param name="json"></param>
         public void ReadJson(JsonData json)
         {
             this.m_treeName = json["name"].ToString();
@@ -59,13 +65,18 @@ namespace Belong.BehaviorTree
             }
         }
 
-        //set root node
+        /// <summary>
+        /// 设置根节点
+        /// </summary>
+        /// <param name="node"></param>
         public void SetRoot(BNode node)
         {
             this.m_root = node;
         }
 
-        //clear root node
+        /// <summary>
+        /// 清楚根节点
+        /// </summary>
         public void Clear()
         {
             this.m_root = null;
@@ -76,7 +87,7 @@ namespace Belong.BehaviorTree
             this.m_root.RunNode(input);
         }
 
-        public BTree Clone ()
+        public BTree Clone()
         {
             BinaryFormatter bf = new BinaryFormatter();
 

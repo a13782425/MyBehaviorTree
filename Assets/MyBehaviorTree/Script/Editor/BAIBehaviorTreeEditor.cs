@@ -59,6 +59,23 @@ namespace Belong.BehaviorTree.Editor
                     }
                     continue;
                 }
+                if (info.Name == "StartTime")
+                {
+                    FieldInfo runField = treeType.GetField("RunEnum", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (runField != null)
+                    {
+                        RunWhereEnum runWhere = (RunWhereEnum)runField.GetValue(tree);
+                        if (runWhere == RunWhereEnum.Repeating)
+                        {
+                            EditorGUILayout.PropertyField(serializedObject.FindProperty(info.Name));
+                            continue;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
                 EditorGUILayout.PropertyField(serializedObject.FindProperty(info.Name));
             }
 
@@ -131,7 +148,7 @@ namespace Belong.BehaviorTree.Editor
                 treeNames = null;
                 Debug.LogError("请使用BTree/Create创建树文件，在对其赋值");
             }
-         
+
         }
 
     }

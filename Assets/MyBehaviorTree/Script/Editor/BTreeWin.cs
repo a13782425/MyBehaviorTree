@@ -300,7 +300,7 @@ namespace Belong.BehaviorTree.Editor
             }
             if (!isSave)
             {
-                filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "b");
+                filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "json");
                 //FileStream fs = File.Create(filePath);
                 //BinaryFormatter binFormat = new BinaryFormatter();//创建二进制序列化器
                 //binFormat.Serialize(fs, data.ToJson());
@@ -311,7 +311,7 @@ namespace Belong.BehaviorTree.Editor
             {
                 if (string.IsNullOrEmpty(filePath))
                 {
-                    filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "b");
+                    filePath = EditorUtility.SaveFilePanel("Behavior Tree", Application.dataPath, "", "json");
                 }
                 FileStream fs = File.OpenWrite(filePath);
                 fs.SetLength(0);
@@ -330,7 +330,7 @@ namespace Belong.BehaviorTree.Editor
         /// </summary>
         public void EditorLoad()
         {
-            filePath = EditorUtility.OpenFilePanel("Bahvior Tree", Application.dataPath, "b");
+            filePath = EditorUtility.OpenFilePanel("Bahvior Tree", Application.dataPath, "json");
             if (string.IsNullOrEmpty(filePath)) return;
             BTreeMgr.Instance.m_mapTree.Clear();
             string txt = File.ReadAllText(filePath);
@@ -836,130 +836,3 @@ namespace Belong.BehaviorTree.Editor
 
     }
 }
-
-
-
-//menu add decision node
-
-//public void RenderNode(BNode node, int x, ref int y)
-//{
-//    Event evt = Event.current;
-//    Debug.LogError(evt.mousePosition);
-//    string showName = string.Empty;
-//    object[] attrobjs = null;
-//    if (cur_node == node)
-//    {
-//        Texture2D texRed = new Texture2D(1, 1);
-//        texRed.SetPixel(0, 0, Color.blue);
-//        texRed.Apply();
-//        GUI.DrawTexture(new Rect(0, y, sInstance.position.width, BTreeWin.NODE_HEIGHT), texRed);
-//    }
-
-//    Rect moveRect = new Rect(0, y, sInstance.position.width - GUI_WIDTH, 5);
-//    bool is_move_node = false;
-//    if (select != null && moveRect.Contains(evt.mousePosition))
-//    {
-//        is_move_node = true;
-//        Texture2D tex = new Texture2D(1, 1);
-//        tex.SetPixel(0, 0, Color.green);
-//        tex.Apply();
-//        GUI.DrawTexture(new Rect(0, y, sInstance.position.width - GUI_WIDTH, 2), tex);
-//        if (evt.button == 0 && evt.type == EventType.MouseUp)
-//        {
-//            if (node != select && node.Parent != null)
-//            {
-//                select.Parent.RemoveChild(select);
-//                select.Parent = node.Parent;
-//                node.Parent.InsertChild(node, select);
-//            }
-//            select = null;
-//            sInstance.Repaint();
-//        }
-//    }
-
-//    Rect rect = new Rect(0, y, sInstance.position.width - GUI_WIDTH, NODE_HEIGHT);
-//    if (!is_move_node && rect.Contains(evt.mousePosition))
-//    {
-//        if (select != null)
-//        {
-//            Texture2D texRed = new Texture2D(1, 1);
-//            texRed.SetPixel(0, 0, Color.red);
-//            texRed.Apply();
-//            GUI.DrawTexture(new Rect(0, y, sInstance.position.width - GUI_WIDTH, NODE_HEIGHT), texRed);
-//        }
-//        if (evt.type == EventType.ContextClick)
-//        {
-//            GenericMenu menu = new GenericMenu();
-//            foreach (Type item in m_lstComposite)
-//            {
-//                menu.AddItem(new GUIContent("Create/Composite/" + item.Name), false, menu_add_callback, new object[] { node, item });
-//            }
-
-//            foreach (Type item in m_lstAction)
-//            {
-//                menu.AddItem(new GUIContent("Create/Action/" + item.Name), false, menu_add_callback, new object[] { node, item });
-//            }
-//            foreach (Type item in m_lstCondition)
-//            {
-//                menu.AddItem(new GUIContent("Create/Condition/" + item.Name), false, menu_add_callback, new object[] { node, item });
-//            }
-//            foreach (Type item in m_lstDecorator)
-//            {
-//                menu.AddItem(new GUIContent("Create/Decorator/" + item.Name), false, menu_add_callback, new object[] { node, item });
-//            }
-
-//            foreach (Type item in m_lstComposite)
-//            {
-//                menu.AddItem(new GUIContent("Switch/Composite/" + item.Name), false, menu_switch_callback, new object[] { node, item });
-//            }
-
-//            menu.AddItem(new GUIContent("Delete"), false, menu_delete_node, node);
-//            menu.ShowAsContext();
-//        }
-//        if (evt.button == 0 && evt.type == EventType.MouseDown && node != cur_tree.m_cRoot)
-//        {
-//            select = node;
-//            cur_node = node;
-//        }
-//        if (evt.button == 0 && evt.type == EventType.MouseUp && select != null)
-//        {
-//            if (node != select)
-//            {
-//                select.Parent.RemoveChild(select);
-//                select.Parent = node;
-//                node.AddChild(select);
-//            }
-//            select = null;
-//            sInstance.Repaint();
-//        }
-//    }
-//    showName = node.Name;
-//    attrobjs = node.GetType().GetCustomAttributes(typeof(BClassAttribute), false);
-//    for (int i = 0; i < attrobjs.Length; i++)
-//    {
-//        BClassAttribute b = attrobjs[i] as BClassAttribute;
-//        if (b != null && !string.IsNullOrEmpty(b.ShowName))
-//        {
-//            showName = b.ShowName;
-//        }
-//    }
-//    GUI.Label(new Rect(x, y, sInstance.position.width, NODE_HEIGHT), showName);
-
-//    /////////////////// line //////////////////////
-//    //Vector3 pos1 = new Vector3(x + NODE_WIDTH / 2, y + NODE_HEIGHT, 0);
-//    Handles.color = Color.red;
-//    if (node != null && node.ChildList != null)
-//    {
-//        for (int i = 0; i < node.ChildList.Count; i++)
-//        {
-//            y = y + NODE_HEIGHT;
-
-//            //Vector3 pos2 = new Vector3(x + NODE_WIDTH / 2, y + NODE_HEIGHT / 2, 0);
-//            //Vector3 pos3 = new Vector3(x + NODE_WIDTH, y + NODE_HEIGHT / 2, 0);
-//            RenderNode(node.ChildList[i], x + NODE_WIDTH, ref y);
-//            //node.ChildList[i].Render(x + NODE_WIDTH, ref y);
-//            //Handles.DrawPolyLine(new Vector3[] { pos1, pos2, pos3 });
-//        }
-//    }
-
-//}

@@ -111,8 +111,6 @@ namespace Belong.BehaviorTree
 
         private BTree Clone(BTree tree)
         {
-
-
             return tree.Clone();
         }
     }
