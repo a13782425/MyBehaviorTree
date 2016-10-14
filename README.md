@@ -30,4 +30,6 @@
               BClass：行为树类上面作为注释可在编辑器中显示：ShowName：在编辑器中显示的名字
               BHideField：公开属性，不想让策划看到
               
-                                
+Todo:增加树的全局变量
+     修改Node获取Unity变量方式
+     
